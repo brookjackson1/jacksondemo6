@@ -40,3 +40,21 @@ CREATE TABLE weather (
 
 -- Add index for city lookups
 CREATE INDEX idx_weather_city ON weather (city);
+
+-- Create movies table
+CREATE TABLE movies (
+    movie_id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    director VARCHAR(255),
+    year INT,
+    plot TEXT,
+    poster TEXT,
+    actors TEXT,
+    genre VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Add index for movie title lookups
+CREATE INDEX idx_movies_title ON movies (title);
+CREATE INDEX idx_movies_year ON movies (year);
