@@ -7,8 +7,10 @@ app.secret_key = 'your-secret'  # Replace with an environment
 
 # Register Blueprints
 from app.blueprints.examples import examples
+from app.blueprints.tickers import tickers_bp
 
 app.register_blueprint(examples, url_prefix='/example')
+app.register_blueprint(tickers_bp)
 
 from . import routes
 
