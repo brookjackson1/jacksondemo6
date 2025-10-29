@@ -27,3 +27,16 @@ CREATE TABLE tickers (
 
 -- Add index for ticker symbol lookups
 CREATE INDEX idx_tickers_symbol ON tickers (symbol);
+
+-- Create weather table
+CREATE TABLE weather (
+    weather_id INT AUTO_INCREMENT PRIMARY KEY,
+    city VARCHAR(100) NOT NULL,
+    state VARCHAR(100),
+    temperature DECIMAL(5, 2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Add index for city lookups
+CREATE INDEX idx_weather_city ON weather (city);

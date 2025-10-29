@@ -1,0 +1,227 @@
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from app.db_connect import get_db
+import requests
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+weather_bp = Blueprint('weather', __name__)
+
+@weather_bp.route('/weather')
+def index():
+    """Display all weather records"""
+    connection = get_db()
+    result = []
+    edit_weather = None
+    delete_weather = None
+
+    edit_id = request.args.get('edit_id')
+    delete_id = request.args.get('delete_id')
+
+    if connection is None:
+        flash("Database connection failed. Please check your database configuration.", "error")
+    else:
+        try:
+            if edit_id:
+                query = "SELECT * FROM weather WHERE weather_id = %s"
+                with connection.cursor() as cursor:
+                    cursor.execute(query, (edit_id,))
+                    edit_weather = cursor.fetchone()
+
+            if delete_id:
+                query = "SELECT * FROM weather WHERE weather_id = %s"
+                with connection.cursor() as cursor:
+                    cursor.execute(query, (delete_id,))
+                    delete_weather = cursor.fetchone()
+
+            query = "SELECT * FROM weather ORDER BY city"
+            with connection.cursor() as cursor:
+                cursor.execute(query)
+                result = cursor.fetchall()
+        except Exception as e:
+            flash(f"Database error: {e}", "error")
+            result = []
+
+    return render_template("weather.html", weather_records=result, edit_weather=edit_weather, delete_weather=delete_weather)
+
+
+@weather_bp.route('/weather/add', methods=['POST'])
+def add_weather():
+    """Add new city to database"""
+    connection = get_db()
+
+    if connection is None:
+        flash("Database connection failed.", "error")
+        return redirect(url_for('weather.index'))
+
+    city = request.form.get('city', '').strip()
+    state = request.form.get('state', '').strip()
+    temperature = request.form.get('temperature', type=float, default=0.0)
+
+    if not city:
+        flash("City name is required.", "error")
+        return redirect(url_for('weather.index'))
+
+    try:
+        query = """
+        INSERT INTO weather (city, state, temperature)
+        VALUES (%s, %s, %s)
+        """
+        with connection.cursor() as cursor:
+            cursor.execute(query, (city, state, temperature))
+        connection.commit()
+
+        flash(f"Weather for {city} added successfully!", "success")
+    except Exception as e:
+        flash(f"Error adding weather: {e}", "error")
+
+    return redirect(url_for('weather.index'))
+
+
+@weather_bp.route('/weather/update/<int:weather_id>')
+def update_weather(weather_id):
+    """Fetch live weather from API and update database"""
+    connection = get_db()
+
+    if connection is None:
+        flash("Database connection failed.", "error")
+        return redirect(url_for('weather.index'))
+
+    try:
+        # First, get the city from database
+        query = "SELECT city, state FROM weather WHERE weather_id = %s"
+        with connection.cursor() as cursor:
+            cursor.execute(query, (weather_id,))
+            weather = cursor.fetchone()
+
+        if not weather:
+            flash("Weather record not found.", "error")
+            return redirect(url_for('weather.index'))
+
+        city = weather['city']
+        state = weather['state']
+
+        # Fetch live weather from API
+        live_temp = fetch_live_weather(city, state)
+
+        if live_temp is None:
+            flash(f"Could not fetch live weather for {city}.", "error")
+            return redirect(url_for('weather.index'))
+
+        # Update database with new temperature
+        update_query = """
+        UPDATE weather
+        SET temperature = %s
+        WHERE weather_id = %s
+        """
+        with connection.cursor() as cursor:
+            cursor.execute(update_query, (live_temp, weather_id))
+        connection.commit()
+
+        flash(f"Weather updated for {city}: {live_temp:.1f}°F", "success")
+
+    except Exception as e:
+        flash(f"Error updating weather: {e}", "error")
+
+    return redirect(url_for('weather.index'))
+
+
+@weather_bp.route('/weather/edit/<int:weather_id>', methods=['POST'])
+def edit_weather(weather_id):
+    """Edit existing weather record"""
+    connection = get_db()
+
+    if connection is None:
+        flash("Database connection failed.", "error")
+        return redirect(url_for('weather.index'))
+
+    city = request.form.get('city', '').strip()
+    state = request.form.get('state', '').strip()
+    temperature = request.form.get('temperature', type=float, default=0.0)
+
+    if not city:
+        flash("City name is required.", "error")
+        return redirect(url_for('weather.index'))
+
+    try:
+        query = """
+        UPDATE weather
+        SET city = %s, state = %s, temperature = %s
+        WHERE weather_id = %s
+        """
+        with connection.cursor() as cursor:
+            cursor.execute(query, (city, state, temperature, weather_id))
+        connection.commit()
+
+        flash(f"Weather for {city} updated successfully!", "success")
+    except Exception as e:
+        flash(f"Error updating weather: {e}", "error")
+
+    return redirect(url_for('weather.index'))
+
+
+@weather_bp.route('/weather/delete/<int:weather_id>', methods=['POST'])
+def delete_weather(weather_id):
+    """Delete weather record"""
+    connection = get_db()
+
+    if connection is None:
+        flash("Database connection failed.", "error")
+        return redirect(url_for('weather.index'))
+
+    try:
+        query = "DELETE FROM weather WHERE weather_id = %s"
+        with connection.cursor() as cursor:
+            cursor.execute(query, (weather_id,))
+        connection.commit()
+
+        flash("Weather record deleted successfully!", "success")
+    except Exception as e:
+        flash(f"Error deleting weather: {e}", "error")
+
+    return redirect(url_for('weather.index'))
+
+
+def fetch_live_weather(city, state=None):
+    """
+    Fetch live weather from OpenWeatherMap API
+    Set OPENWEATHER_API_KEY in your .env file
+    Get a free API key at: https://openweathermap.org/api
+    """
+    api_key = os.getenv('OPENWEATHER_API_KEY')
+
+    if not api_key:
+        print("Warning: OPENWEATHER_API_KEY not set in environment variables")
+        return None
+
+    try:
+        # Build location string
+        location = f"{city},{state},US" if state else f"{city},US"
+
+        # OpenWeatherMap API endpoint
+        url = "https://api.openweathermap.org/data/2.5/weather"
+        params = {
+            'q': location,
+            'appid': api_key,
+            'units': 'imperial'  # Fahrenheit
+        }
+
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+
+        # Extract temperature from response
+        if 'main' in data and 'temp' in data['main']:
+            temperature = float(data['main']['temp'])
+            return temperature
+        else:
+            print(f"Unexpected API response for {city}: {data}")
+            return None
+
+    except requests.exceptions.RequestException as e:
+        print(f"API request failed for {city}: {e}")
+        return None
+    except (KeyError, ValueError) as e:
+        print(f"Error parsing API response for {city}: {e}")
+        return None
