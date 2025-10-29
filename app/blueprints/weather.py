@@ -53,7 +53,7 @@ def add_weather():
 
     city = request.form.get('city', '').strip()
     state = request.form.get('state', '').strip()
-    temperature = request.form.get('temperature', type=float, default=0.0)
+    temperature = request.form.get('temperature', type=float, default=75.0)
 
     if not city:
         flash("City name is required.", "error")
@@ -68,7 +68,7 @@ def add_weather():
             cursor.execute(query, (city, state, temperature))
         connection.commit()
 
-        flash(f"Weather for {city} added successfully!", "success")
+        flash(f"Weather for {city} added successfully! Click 'Update Weather' to fetch live data.", "success")
     except Exception as e:
         flash(f"Error adding weather: {e}", "error")
 
