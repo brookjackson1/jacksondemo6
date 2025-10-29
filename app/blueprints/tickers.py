@@ -9,11 +9,28 @@ def index():
     """Display all tickers from database"""
     connection = get_db()
     result = []
+    edit_ticker = None
+    delete_ticker = None
+
+    edit_id = request.args.get('edit_id')
+    delete_id = request.args.get('delete_id')
 
     if connection is None:
         flash("Database connection failed. Please check your database configuration.", "error")
     else:
         try:
+            if edit_id:
+                query = "SELECT * FROM tickers WHERE ticker_id = %s"
+                with connection.cursor() as cursor:
+                    cursor.execute(query, (edit_id,))
+                    edit_ticker = cursor.fetchone()
+
+            if delete_id:
+                query = "SELECT * FROM tickers WHERE ticker_id = %s"
+                with connection.cursor() as cursor:
+                    cursor.execute(query, (delete_id,))
+                    delete_ticker = cursor.fetchone()
+
             query = "SELECT * FROM tickers ORDER BY symbol"
             with connection.cursor() as cursor:
                 cursor.execute(query)
@@ -22,7 +39,7 @@ def index():
             flash(f"Database error: {e}", "error")
             result = []
 
-    return render_template("tickers.html", tickers=result)
+    return render_template("tickers.html", tickers=result, edit_ticker=edit_ticker, delete_ticker=delete_ticker)
 
 
 @tickers_bp.route('/tickers/add', methods=['POST'])
@@ -101,6 +118,62 @@ def update_price(ticker_id):
 
     except Exception as e:
         flash(f"Error updating price: {e}", "error")
+
+    return redirect(url_for('tickers.index'))
+
+
+@tickers_bp.route('/tickers/edit/<int:ticker_id>', methods=['POST'])
+def edit_ticker(ticker_id):
+    """Edit existing ticker"""
+    connection = get_db()
+
+    if connection is None:
+        flash("Database connection failed.", "error")
+        return redirect(url_for('tickers.index'))
+
+    symbol = request.form.get('symbol', '').upper().strip()
+    name = request.form.get('name', '').strip()
+    price = request.form.get('price', type=float, default=0.0)
+
+    if not symbol or not name:
+        flash("Symbol and name are required.", "error")
+        return redirect(url_for('tickers.index'))
+
+    try:
+        query = """
+        UPDATE tickers
+        SET symbol = %s, name = %s, price = %s
+        WHERE ticker_id = %s
+        """
+        with connection.cursor() as cursor:
+            cursor.execute(query, (symbol, name, price, ticker_id))
+        connection.commit()
+
+        flash(f"Ticker {symbol} updated successfully!", "success")
+    except Exception as e:
+        flash(f"Error updating ticker: {e}", "error")
+
+    return redirect(url_for('tickers.index'))
+
+
+@tickers_bp.route('/tickers/delete/<int:ticker_id>', methods=['POST'])
+def delete_ticker(ticker_id):
+    """Delete ticker"""
+    connection = get_db()
+
+    if connection is None:
+        flash("Database connection failed.", "error")
+        return redirect(url_for('tickers.index'))
+
+    try:
+        query = "DELETE FROM tickers WHERE ticker_id = %s"
+        with connection.cursor() as cursor:
+            cursor.execute(query, (ticker_id,))
+        connection.commit()
+
+        flash("Ticker deleted successfully!", "success")
+    except Exception as e:
+        flash(f"Error deleting ticker: {e}", "error")
 
     return redirect(url_for('tickers.index'))
 

@@ -17,7 +17,11 @@
       "Bash(git remote add:*)",
       "Bash(git add:*)",
       "Bash(dir C:UsersbrookOneDriveDesktopmarshalljacksondemo6)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(heroku logs:*)",
+      "WebFetch(domain:marshall-demo-06-9785c03a410d.herokuapp.com)"
     ],
     "deny": [],
     "ask": []

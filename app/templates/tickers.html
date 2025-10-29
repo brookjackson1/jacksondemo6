@@ -41,8 +41,9 @@
                 <th>Ticker ID</th>
                 <th>Symbol</th>
                 <th>Name</th>
-                <th>Price</th>
+                <th>Current Price</th>
                 <th>Last Updated</th>
+                <th>Created At</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -54,20 +55,99 @@
                 <td>{{ ticker.name }}</td>
                 <td>${{ "%.2f"|format(ticker.price) }}</td>
                 <td>{{ ticker.updated_at.strftime('%Y-%m-%d %H:%M') if ticker.updated_at else 'N/A' }}</td>
+                <td>{{ ticker.created_at.strftime('%Y-%m-%d %H:%M') if ticker.created_at else 'N/A' }}</td>
                 <td>
                     <a href="/tickers/update/{{ ticker.ticker_id }}"
-                       class="btn btn-primary">
+                       class="btn btn-sm btn-primary">
                         <i class="fas fa-sync-alt"></i> Update Price
+                    </a>
+                    <a href="?edit_id={{ ticker.ticker_id }}" class="btn btn-sm btn-info">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a href="?delete_id={{ ticker.ticker_id }}" class="btn btn-sm btn-danger">
+                        <i class="fas fa-trash"></i> Delete
                     </a>
                 </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="6" class="text-center">No tickers found. Add your first ticker!</td>
+                <td colspan="7" class="text-center">No tickers found. Add your first ticker!</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+</div>
+
+<!-- Edit Modal -->
+{% if request.args.get('edit_id') %}
+<div class="modal fade show" id="editModal" tabindex="-1" role="dialog" style="display: block;" aria-modal="true">
+{% else %}
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-hidden="true">
+{% endif %}
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Ticker</h5>
+        <a href="{{ url_for('tickers.index') }}" class="close">
+          <span>&times;</span>
+        </a>
+      </div>
+      {% if edit_ticker %}
+      <form action="{{ url_for('tickers.edit_ticker', ticker_id=edit_ticker.ticker_id) }}" method="post">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="editSymbol">Symbol:</label>
+            <input type="text" class="form-control" id="editSymbol" name="symbol" value="{{ edit_ticker.symbol }}" required style="text-transform: uppercase;">
+          </div>
+          <div class="form-group">
+            <label for="editName">Name:</label>
+            <input type="text" class="form-control" id="editName" name="name" value="{{ edit_ticker.name }}" required>
+          </div>
+          <div class="form-group">
+            <label for="editPrice">Price:</label>
+            <input type="number" step="0.01" class="form-control" id="editPrice" name="price" value="{{ edit_ticker.price }}" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <a href="{{ url_for('tickers.index') }}" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+{% if request.args.get('delete_id') %}
+<div class="modal fade show" id="deleteModal" tabindex="-1" role="dialog" style="display: block;" aria-modal="true">
+{% else %}
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-hidden="true">
+{% endif %}
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirm Delete</h5>
+        <a href="{{ url_for('tickers.index') }}" class="close">
+          <span>&times;</span>
+        </a>
+      </div>
+      {% if delete_ticker %}
+      <div class="modal-body">
+        <p>Are you sure you want to delete this ticker?</p>
+        <p><strong>Symbol:</strong> {{ delete_ticker.symbol }}</p>
+        <p><strong>Name:</strong> {{ delete_ticker.name }}</p>
+        <p class="text-danger">This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <a href="{{ url_for('tickers.index') }}" class="btn btn-secondary">Cancel</a>
+        <form action="{{ url_for('tickers.delete_ticker', ticker_id=delete_ticker.ticker_id) }}" method="post" style="display: inline;">
+          <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+  </div>
 </div>
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
@@ -95,6 +175,26 @@
     .btn-primary:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0, 51, 153, 0.3);
+    }
+
+    .btn-info {
+        background: linear-gradient(45deg, #17a2b8, #138496);
+        border: none;
+    }
+
+    .btn-info:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(23, 162, 184, 0.3);
+    }
+
+    .btn-danger {
+        background: linear-gradient(45deg, #dc3545, #c82333);
+        border: none;
+    }
+
+    .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
     }
 
     input[name="symbol"] {
