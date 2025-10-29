@@ -87,7 +87,11 @@ def fetch_data(movie_id):
         movie_data = fetch_omdb_data(title)
 
         if movie_data is None:
-            flash(f"Could not fetch data for '{title}' from OMDB API.", "error")
+            api_key = os.getenv('OMDB_API_KEY')
+            if not api_key:
+                flash(f"OMDB API key is not configured. Please set OMDB_API_KEY in environment variables.", "error")
+            else:
+                flash(f"Could not fetch data for '{title}' from OMDB API. The movie may not exist in OMDB database.", "error")
             return redirect(url_for('movies.index'))
 
         # Update database with fetched data
