@@ -14,10 +14,12 @@
             <form action="/movies/add" method="POST">
                 <div class="row">
                     <div class="col-md-10">
-                        <input type="text" name="title" class="form-control"
-                               placeholder="Movie Title (e.g., Dances with Wolves)" required>
+                        <label for="title" class="form-label">Movie Title</label>
+                        <input type="text" id="title" name="title" class="form-control"
+                               placeholder="e.g., Dances with Wolves" required>
                     </div>
                     <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
                         <button type="submit" class="btn btn-warning btn-block text-white">
                             <i class="fas fa-plus"></i> Add Movie
                         </button>

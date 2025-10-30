@@ -10,11 +10,13 @@ from app.blueprints.examples import examples
 from app.blueprints.tickers import tickers_bp
 from app.blueprints.weather import weather_bp
 from app.blueprints.movies import movies_bp
+from app.blueprints.chat import chat_bp
 
 app.register_blueprint(examples, url_prefix='/example')
 app.register_blueprint(tickers_bp)
 app.register_blueprint(weather_bp)
 app.register_blueprint(movies_bp)
+app.register_blueprint(chat_bp)
 
 from . import routes
 

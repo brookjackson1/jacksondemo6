@@ -14,18 +14,22 @@
             <form action="/weather/add" method="POST">
                 <div class="row">
                     <div class="col-md-4">
-                        <input type="text" name="city" class="form-control"
-                               placeholder="City (e.g., Macon)" required>
+                        <label for="city" class="form-label">City</label>
+                        <input type="text" id="city" name="city" class="form-control"
+                               placeholder="e.g., Macon" required>
                     </div>
                     <div class="col-md-3">
-                        <input type="text" name="state" class="form-control"
-                               placeholder="State (e.g., Georgia)">
+                        <label for="state" class="form-label">State</label>
+                        <input type="text" id="state" name="state" class="form-control"
+                               placeholder="e.g., Georgia">
                     </div>
                     <div class="col-md-3">
-                        <input type="number" step="0.01" name="temperature" class="form-control"
-                               placeholder="Initial Temperature" value="75">
+                        <label for="temperature" class="form-label">Initial Temperature (°F)</label>
+                        <input type="number" step="0.01" id="temperature" name="temperature" class="form-control"
+                               placeholder="75.0" value="75">
                     </div>
                     <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
                         <button type="submit" class="btn btn-info btn-block">
                             <i class="fas fa-plus"></i> Add Weather Record
                         </button>

@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <h1>AI Chatbot</h1>
+    <p class="lead">Ask me anything! Powered by Groq AI</p>
+
+<div class="container mt-4">
+    <div class="card chatbot-card">
+        <div class="card-body p-4">
+            <form action="/chatbot/ask" method="POST">
+                <div class="mb-3">
+                    <label for="question" class="form-label">Your Question</label>
+                    <input type="text" class="form-control form-control-lg" name="question"
+                           id="question"
+                           placeholder="e.g., When is Christmas this year?"
+                           value="{% if question %}{{ question }}{% endif %}"
+                           required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-paper-plane"></i> Send Question
+                </button>
+            </form>
+
+            {% if error %}
+            <div class="alert alert-danger mt-4">
+                <h5><i class="fas fa-exclamation-circle"></i> Error:</h5>
+                <p>{{ error }}</p>
+            </div>
+            {% endif %}
+
+            {% if response %}
+            <div class="response-box mt-4">
+                <h5><i class="fas fa-robot"></i> AI Response:</h5>
+                <p>{{ response }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Tips & Features -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card info-card">
+                <div class="card-body">
+                    <h5><i class="fas fa-lightbulb text-warning"></i> Tips for Best Results</h5>
+                    <ul>
+                        <li>Ask clear and specific questions</li>
+                        <li>Be concise but provide necessary context</li>
+                        <li>Try rephrasing if you don't get the answer you want</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card info-card">
+                <div class="card-body">
+                    <h5><i class="fas fa-star text-success"></i> Features</h5>
+                    <ul>
+                        <li><strong>Free:</strong> Powered by Groq API</li>
+                        <li><strong>Fast:</strong> Super fast responses (under 1 second!)</li>
+                        <li><strong>Private:</strong> No conversation history retained</li>
+                        <li><strong>Versatile:</strong> Programming, general knowledge, explanations</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .lead {
+        color: var(--gcsu-blue);
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+
+    .chatbot-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-control-lg {
+        border-radius: 10px;
+        border: 2px solid #e0e0e0;
+        padding: 12px 20px;
+        font-size: 1rem;
+    }
+
+    .form-control-lg:focus {
+        border-color: var(--gcsu-blue);
+        box-shadow: 0 0 0 0.2rem rgba(0, 51, 153, 0.15);
+    }
+
+    .btn-lg {
+        padding: 12px 30px;
+        font-size: 1.1rem;
+        border-radius: 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: linear-gradient(45deg, var(--gcsu-blue), var(--gcsu-green));
+        border: none;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 51, 153, 0.3);
+    }
+
+    .response-box {
+        background: linear-gradient(135deg, #e6f2ff 0%, #ffffff 50%, #e6f7e6 100%);
+        border-left: 4px solid var(--gcsu-green);
+        border-radius: 10px;
+        padding: 20px;
+        animation: fadeIn 0.5s ease-in;
+    }
+
+    .response-box h5 {
+        color: var(--gcsu-blue);
+        margin-bottom: 15px;
+    }
+
+    .response-box p {
+        font-size: 1.05rem;
+        line-height: 1.7;
+        color: #333;
+        margin: 0;
+        white-space: pre-wrap;
+    }
+
+    .info-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        height: 100%;
+        transition: transform 0.3s ease;
+    }
+
+    .info-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .info-card h5 {
+        color: var(--gcsu-blue);
+        margin-bottom: 15px;
+        font-size: 1.1rem;
+    }
+
+    .info-card ul {
+        margin: 0;
+        padding-left: 20px;
+    }
+
+    .info-card li {
+        margin-bottom: 8px;
+        color: #555;
+    }
+
+    .alert {
+        animation: fadeIn 0.3s;
+        border-radius: 10px;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+{% endblock %}
