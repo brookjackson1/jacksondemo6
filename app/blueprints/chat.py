@@ -13,11 +13,14 @@ def get_groq_response(question):
     """
     try:
         # Initialize Groq client
-        client = Groq(
-            api_key=os.environ.get('GROQ_API_KEY')
-        )
+        api_key = os.environ.get('GROQ_API_KEY')
+        print(f"[DEBUG] API Key present: {bool(api_key)}")
+
+        client = Groq(api_key=api_key)
+        print(f"[DEBUG] Groq client initialized")
 
         # Create chat completion
+        print(f"[DEBUG] Sending question: {question[:50]}...")
         chat_completion = client.chat.completions.create(
             messages=[
                 {
@@ -25,13 +28,17 @@ def get_groq_response(question):
                     "content": question,
                 }
             ],
-            model="llama-3.3-70b-versatile",  # Updated to current model
+            model="llama-3.3-70b-versatile",  # Current supported model
         )
 
-        return chat_completion.choices[0].message.content
+        response = chat_completion.choices[0].message.content
+        print(f"[DEBUG] Got response: {response[:100]}...")
+        return response
 
     except Exception as e:
         print(f"[ERROR] Groq API error: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
 
