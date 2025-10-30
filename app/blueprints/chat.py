@@ -29,6 +29,7 @@ def get_groq_response(question):
                 }
             ],
             model="llama-3.3-70b-versatile",  # Current supported model
+            timeout=30.0  # 30 second timeout
         )
 
         response = chat_completion.choices[0].message.content
@@ -66,13 +67,21 @@ def ask():
                              error="Groq API key is not configured. Please set GROQ_API_KEY in environment variables.")
 
     # Get response from Groq
-    response = get_groq_response(question)
+    try:
+        response = get_groq_response(question)
 
-    if response is None:
+        if response is None:
+            return render_template("chat.html",
+                                 response=None,
+                                 error="Failed to get response from Groq API. The API may be experiencing issues. Please try again in a moment.")
+
+        return render_template("chat.html",
+                             response=response,
+                             question=question)
+    except Exception as e:
+        print(f"[ERROR] Exception in ask route: {e}")
+        import traceback
+        traceback.print_exc()
         return render_template("chat.html",
                              response=None,
-                             error="Failed to get response from Groq API. Please try again.")
-
-    return render_template("chat.html",
-                         response=response,
-                         question=question)
+                             error=f"An error occurred: {str(e)}")

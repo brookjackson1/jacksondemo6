@@ -23,7 +23,9 @@
       "Bash(heroku logs:*)",
       "WebFetch(domain:marshall-demo-06-9785c03a410d.herokuapp.com)",
       "Bash(timeout 3 bash:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(del \"C:\\Users\\brook\\OneDrive\\Desktop\\marshall\\jacksondemo6\\app\\blueprints\\examples.py\")",
+      "Bash(del \"C:\\Users\\brook\\OneDrive\\Desktop\\marshall\\jacksondemo6\\app\\templates\\examples.html\")"
     ],
     "deny": [],
     "ask": []
