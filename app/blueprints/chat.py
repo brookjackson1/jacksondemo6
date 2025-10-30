@@ -25,7 +25,7 @@ def get_groq_response(question):
                     "content": question,
                 }
             ],
-            model="llama3-8b-8192",  # or mixtral-8x7b-32768
+            model="llama-3.3-70b-versatile",  # Updated to current model
         )
 
         return chat_completion.choices[0].message.content
